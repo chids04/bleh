@@ -1,0 +1,31 @@
+---
+import { ClientRouter } from "astro:transitions";
+
+import  Layout  from "@/components/Layout"
+import MediaBar from "@/components/MediaBar";
+import "@/styles/global.css"
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Astro</title>
+	</head>
+	<body>
+        <div class="flex flex-col h-screen w-screen bg-zinc-900">
+            <div class="flex-1 min-h-0 border-red-700 border-3">
+			<Layout client:load>
+				<slot/>
+			</Layout>
+            </div>
+            <div class="h-[100px] w-full flex-shrink-0">
+				<MediaBar client:load transition:persist/>
+            </div>
+        </div>
+    </body>
+</html>
+
+<ClientRouter/>

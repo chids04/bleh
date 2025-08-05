@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # music files for testing
 src-tauri/music
+
+# db file location
+src-tauri/db
