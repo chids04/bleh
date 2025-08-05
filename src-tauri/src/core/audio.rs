@@ -3,6 +3,7 @@ use std::path::Path;
 use std::fs::File;
 use std::sync::{Arc, mpsc};
 use std::thread;
+use std::time::Duration;
 use crate::core::song::Song;
 
 pub struct CPlayer {
@@ -23,6 +24,7 @@ pub enum AudioCommand {
     QueueNext(Song),
     QueueEnd(Song),
     AckCommand(String),
+    Seek(f64),
 }
 
 
@@ -97,6 +99,14 @@ impl CPlayer {
     pub fn queue_end(&mut self, song: Song) {
         self.queue.push(song)
     }
+
+    pub fn seek(&self, pos: f64) {
+        let pos = Duration::from_secs_f64(pos);
+
+        if let Err(e) = self.sink.try_seek(pos) {
+            println!("failed to seek song {e}");
+        }
+    }
     
 }
 
@@ -144,6 +154,12 @@ impl PlayerController {
             .send(AudioCommand::TogglePlay)
             .expect("Audio thread has panicked and disconnected");
     }
+
+    pub fn seek(&self, pos: f64) {
+        self.command_sender
+            .send(AudioCommand::Seek(pos))
+            .expect("Audio thread has panicked and disconnected");
+    }
 }
 
 pub fn audio_thread_loop(receiver: mpsc::Receiver<AudioCommand>, sender: mpsc::Sender<AudioCommand>) {
@@ -167,6 +183,7 @@ pub fn audio_thread_loop(receiver: mpsc::Receiver<AudioCommand>, sender: mpsc::S
                     player.pause_song();
                 }
             }
+            AudioCommand::Seek(p) => player.seek(p),
             _ => {},
         }
     }

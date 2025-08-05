@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { invoke } from '@tauri-apps/api/core';
 import { open } from "@tauri-apps/plugin-dialog"
 import { DirectoryTable } from "@/components/settings/DirectoryTable";
+import { Separator } from "@/components/ui/separator";
 
 
 export function SettingsView() {
@@ -30,7 +31,7 @@ export function SettingsView() {
     return (
         <div>
             <Button 
-            className="border-muted-foreground border-2 hover:bg-muted-foregrounds" 
+            className="border-muted-foreground border-2 hover:bg-muted-foregrounds mb-3" 
             onClick={handleClick}>scan directory</Button>
             
             {error && (
@@ -40,7 +41,9 @@ export function SettingsView() {
                 </div>
             )}
 
-            <DirectoryTable/>
+            <Separator className="mb-3"/>
+
+            <DirectoryTable />
         </div>
 
 

@@ -48,7 +48,7 @@ export function DirectoryTable() {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>path</TableHead>
+                        <TableHead className="font-bold text-white">path</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -56,7 +56,7 @@ export function DirectoryTable() {
                     <ContextMenu key={dir.id}>
                         <ContextMenuTrigger asChild>
                             <TableRow>
-                                <TableCell className="font-medium">{dir.path}</TableCell>
+                                <TableCell className="font-medium text-white">{dir.path}</TableCell>
                             </TableRow>
                         </ContextMenuTrigger>
 

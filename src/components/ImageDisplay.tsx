@@ -37,7 +37,7 @@ export function ImageDisplay({ image, altText = "Image", className = "" }: Image
 
     return (
         <img
-            src={imageUrl ? imageUrl : "null"}
+            src={imageUrl ? imageUrl : ""}
             alt={altText}
             className={className}
         />

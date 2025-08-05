@@ -69,10 +69,10 @@ export default function CSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title} className="mb-3">
                   {/* Add stroke-white to make icons white */}
-                  <SidebarMenuButton asChild className="bg-zinc-700 hover:bg-zinc-600">
+                  <SidebarMenuButton asChild size="lg" className="bg-zinc-700 hover:bg-zinc-600">
                     <a href={item.url}>
                       <item.icon className="stroke-white" />
-                      <span className="text-white">{item.title}</span>
+                      <span className="text-white text-9xl">{item.title}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

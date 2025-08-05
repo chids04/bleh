@@ -31,13 +31,15 @@ pub fn db_dir() -> PathBuf {
     path
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
 pub enum SongEvent {
     PlayingSong {
         title: String,
         artist: (Uuid, String),
         features: Option<Vec<(Option<Uuid>, String)>>,
         album: (Uuid, String),
+        duration: f64
     }
 }
 
@@ -57,6 +59,11 @@ pub struct SongToSend {
     pub duration: f64
 }
 
+#[tauri::command]
+fn seek_to(state: State<AppState>, pos: f64) {
+    let state = state.lock().unwrap();
+    state.player.seek(pos);
+}
 #[tauri::command]
 fn toggle_play(state: State<AppState>) {
     let state = state.lock().unwrap();
@@ -87,14 +94,18 @@ fn play_song(app: AppHandle, id: &str) -> Result<(), String>{
             Some(a) => &a.title,
             None => "Unknown Artist"
             
-        };
+    };
 
         let msg = SongEvent::PlayingSong {
             title: s.title.clone(),
             artist: (s.artist.clone(), artist_string.into()),
             album: (s.album.clone(), album_string.into()),
             features: s.features.clone(),
+            duration: s.duration,
         };
+
+        println!("{:?}", &msg);
+
 
         app.emit("playing-song", &msg).unwrap();
     }
@@ -235,7 +246,7 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![read_directory, get_songs, get_covers, play_song, toggle_play, delete_directory, get_directories])
+        .invoke_handler(tauri::generate_handler![read_directory, get_songs, get_covers, play_song, toggle_play, delete_directory, get_directories, seek_to])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
