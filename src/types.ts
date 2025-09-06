@@ -12,9 +12,11 @@ export interface Song {
 }
 
 export interface Album {
+    id: string
     title: string
-    artists: [string, string],
+    artists: [string | null, string][],
     cover?: Image
+    songs: string[]
 }
 
 export interface Image {

@@ -3,6 +3,9 @@ import { useState, useEffect, useRef } from "react";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
+import { ImageDisplay } from "@/components/ImageDisplay";
+
+import type { Image } from "@/types";
 
 type PlayingSong = {
     title: string;
@@ -17,6 +20,9 @@ export default function MediaBar() {
     const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [currentSong, setCurrentSong] = useState<PlayingSong | null>(null);
     const [isDragging, setIsDragging] = useState<boolean>(false);
+    const [cover, setCover] = useState<Image>()
+    const [volume, setVolume] = useState(100)
+
     const animationFrameRef = useRef<number | null>(null);
     const startTimeRef = useRef<number | null>(null);
 
@@ -64,13 +70,24 @@ export default function MediaBar() {
             setCurrentSong(e.payload);
             setIsPlaying(true);
             setSliderValue(0);
+            requestCoverArt(e.payload.album[0])
             startTimeRef.current = performance.now() / 1000;
+
+            
         });
 
         return () => {
             unlisten.then((f) => f());
         };
     }, []);
+
+    const requestCoverArt = async (id: string) => {
+        const cover = await invoke<Image | null>("get_cover", { id })
+
+        if (cover) {
+            setCover(cover)
+        }
+    }
 
     const togglePlay = async () => {
         try {
@@ -110,7 +127,17 @@ export default function MediaBar() {
 
     return (
         <div className="flex flex-row h-full w-full select-none">
-            <div className="w-1/4 border-pink-400 border-2">
+            <div className="w-1/4 flex flex-row border-pink-400 gap-3 border-2">
+                <ImageDisplay image={cover} className="h-full aspect-square"/>
+                <div className="flex flex-col iteems-center justify-center text-white min-w-0">
+                    <p className="text-ellipsis overflow-hidden whitespace-nowrap text-sm font-medium">
+                        {currentSong?.title ?? ""}
+                    </p>
+                    <p className="truncate overflow-hidden whitespace-nowrap text-xs text-muted-foreground">
+                        {currentSong?.artist[1]}
+                    </p>
+                </div>
+            
             </div>
 
             <div className="w-2/4 h-full border-pink-400 border-2">
@@ -164,11 +191,18 @@ export default function MediaBar() {
                     </div>
                     <div className="text-muted-foreground text-sm w-12 font-mono tabular-nums">
                         {formatTime(currentSong?.duration ? Math.floor(currentSong.duration) : 0)}
+
                     </div>
                 </div>
             </div>
 
-            <div className="w-1/4 border-pink-400 border-2"></div>
+            <div className="flex flex-row h-full items-center w-1/4 border-pink-400 border-2">
+                <Slider
+                orientation="vertical"
+                className="h-full "
+                />
+                    
+            </div>
         </div>
     );
 }

@@ -1,43 +1,21 @@
-const albums = [
-  {
-    id: 1,
-    title: 'good kid, m.A.A.d city (Deluxe Edition)',
-    artist: 'Kendrick Lamar',
-    image: '/images/good_kid_maad_city.jpg', // Adjust path for Astro static assets
-  },
-  {
-    id: 2,
-    title: 'Section.80',
-    artist: 'Kendrick Lamar',
-    image: '/images/section_80.jpg', // Adjust path for Astro static assets
-  },
-  {
-    id: 3,
-    title: 'To Pimp a Butterfly',
-    artist: 'Kendrick Lamar',
-    image: '/images/to_pimp_a_butterfly.jpg', // Adjust path for Astro static assets
-  },
-  {
-    id: 4,
-    title: 'untitled unmastered.',
-    artist: 'Kendrick Lamar',
-    image: '/images/untitled_unmastered.jpg', // Adjust path for Astro static assets
-  },
-  {
-    id: 5,
-    title: 'DAMN.',
-    artist: 'Kendrick Lamar',
-    image: '/images/damn.jpg', // Adjust path for Astro static assets
-  },
-  {
-    id: 6,
-    title: 'Mr. Morale & The Big Steppers',
-    artist: 'Kendrick Lamar',
-    image: '/images/mr_morale.jpg', // Adjust path for Astro static assets
-  },
-];
+import { useState, useEffect } from "react";
+import type { Album } from "@/types"
+import { invoke } from "@tauri-apps/api/core"
 
 export default function AlbumsDisplay() {
+  const [albums, setAlbums] = useState<Album[]>([])
+
+  useEffect(() => {
+    const loadAlbums = async () => {
+      const albums = await invoke<Album[]>("get_albums");
+      console.log(albums)
+      setAlbums(albums)
+    }
+
+    loadAlbums()
+
+  }, [])
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
       {albums.map((album) => (
@@ -55,7 +33,7 @@ export default function AlbumsDisplay() {
               {album.title}
             </h3>
             <p className="text-xs text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis">
-              {album.artist}
+              {album.artists.map(artist => artist[1]).join(', ')}
             </p>
           </div>
         </div>

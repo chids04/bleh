@@ -145,6 +145,7 @@ pub fn init_db(conn: &Connection) -> Result<()>{
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             cover_data BLOB
+            cover_extension TEXT DEFAULT 'image/jpeg'
         )",
     []
     )?;
@@ -237,11 +238,12 @@ pub fn insert_song_to_db(
 
     if let Some(album) = albums.get(&song.album) {
         tx.execute(
-            "INSERT OR IGNORE INTO albums (id, name, cover_data) VALUES (?1, ?2, ?3)",
+            "INSERT OR IGNORE INTO albums (id, name, cover_data, cover_extension) VALUES (?1, ?2, ?3, ?4)",
             (
-                album.id.to_string(),
-                &album.title,
-                album.cover.as_ref().map(|img| &img.data),
+            album.id.to_string(),
+            &album.title,
+            album.cover.as_ref().map(|img| &img.data),
+            album.cover.as_ref().map(|img| &img.extension),
             ),
         )?;
 
@@ -352,30 +354,31 @@ pub fn get_all_artists(conn: &Connection) -> Result<HashMap<Uuid, Artist>, rusql
 
 pub fn get_all_albums(conn: &Connection) -> Result<HashMap<Uuid, Album>, rusqlite::Error> {
     // get basic album info
-    let mut stmt = conn.prepare("SELECT id, name, cover_data FROM albums")?;
+    let mut stmt = conn.prepare("SELECT id, name, cover_data, cover_extension FROM albums")?;
     
     let album_iter = stmt.query_map([], |row| {
         let id_str: String = row.get(0)?;
         let name: String = row.get(1)?;
         let cover_data: Option<Vec<u8>> = row.get(2)?;
+        let cover_extension: String = row.get(3)?;
         
         let id = Uuid::parse_str(&id_str)
             .map_err(|_| rusqlite::Error::InvalidColumnType(0, "id".to_string(), rusqlite::types::Type::Text))?;
             
-        Ok((id, name, cover_data))
+        Ok((id, name, cover_data, cover_extension))
     })?;
 
     let mut albums = HashMap::new();
     
     for album_result in album_iter {
-        if let Ok((album_id, title, cover_data)) = album_result {
+        if let Ok((album_id, title, cover_data, cover_extension)) = album_result {
             let artists = get_album_artists(conn, album_id)?;
             
             let songs = get_album_songs(conn, album_id)?;
             
             let cover = cover_data.map(|data| Image {
                 data,
-                extension: "image/jpeg".to_string(),
+                extension: cover_extension,
             });
             
             let album = Album {
@@ -456,7 +459,7 @@ pub fn get_all_songs(conn: &Connection) -> Result<HashMap<Uuid, Song>, rusqlite:
         
         let cover = cover_data.map(|data| Image {
             data,
-            extension: "image/jpg".to_string(),
+            extension: "image/jpeg".to_string(),
         });
         
         let song = Song {

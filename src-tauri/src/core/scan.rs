@@ -20,7 +20,6 @@ use crate::state::{init_db, insert_song_to_db};
 use crate::core::song::{Album, Artist, ArtistType, Image, Song};
 
 
-
 #[derive(Debug)]
 pub enum CError {
     InvalidTag(PathBuf),

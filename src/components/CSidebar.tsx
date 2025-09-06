@@ -33,7 +33,7 @@ const items = [
   },
   {
     title: "artists",
-    url: "#",
+    url: "artists",
     icon: Mic2,
   },
   {
@@ -59,6 +59,8 @@ const items = [
 ]
 
 export default function CSidebar() {
+
+  
   return (
     // Add "bg-black text-white" classes for dark mode with white text
     <Sidebar collapsible="none" className="bg-zinc-800">
@@ -71,8 +73,8 @@ export default function CSidebar() {
                   {/* Add stroke-white to make icons white */}
                   <SidebarMenuButton asChild size="lg" className="bg-zinc-700 hover:bg-zinc-600">
                     <a href={item.url}>
-                      <item.icon className="stroke-white" />
-                      <span className="text-white text-9xl">{item.title}</span>
+                      <item.icon className="stroke-white" strokeWidth={2.5} />
+                      <span className="text-white text-xl">{item.title}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

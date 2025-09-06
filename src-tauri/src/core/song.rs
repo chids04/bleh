@@ -56,7 +56,7 @@ impl ArtistType {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Album {
     pub id: Uuid,
     pub artists: Vec<(Option<Uuid>, String)>,

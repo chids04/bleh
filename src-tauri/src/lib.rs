@@ -4,12 +4,11 @@ pub mod state;
 use std::fs;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::thread;
 use std::sync::{Arc, Mutex, mpsc};
 use uuid::Uuid;
 
 use crate::core::scan::{scan_dir, remove_folder};
-use crate::core::song::{Album, Song, SongDto, Image};
+use crate::core::song::{Album, Song, SongDto, Artist, Image};
 use crate::core::audio;
 use crate::state::MusicLibrary;
 
@@ -39,7 +38,7 @@ pub enum SongEvent {
         artist: (Uuid, String),
         features: Option<Vec<(Option<Uuid>, String)>>,
         album: (Uuid, String),
-        duration: f64
+        duration: f64,
     }
 }
 
@@ -90,11 +89,20 @@ fn play_song(app: AppHandle, id: &str) -> Result<(), String>{
             
         };
 
-        let album_string = match state.albums.get(&s.album) {
-            Some(a) => &a.title,
-            None => "Unknown Artist"
+        let (album_string, cover): (String, Option<Image>) = match state.albums.get(&s.album) {
+            Some(a) => {
+                if let Some(c) = &a.cover {
+                    (a.title.clone(), Some(c.clone()))
+                }
+                else{
+                    (a.title.clone(), None)
+                }
+            }
+
+            None => ("Unknown Artist".into(), None)
             
-    };
+        };
+
 
         let msg = SongEvent::PlayingSong {
             title: s.title.clone(),
@@ -185,6 +193,31 @@ fn get_songs(state: State<AppState>) -> Vec<SongToSend>{
 }
 
 #[tauri::command]
+fn get_artists(state: State<AppState>) -> Vec<Artist> {
+    let state = state.lock().unwrap();
+
+    let artist_vec = state.artist_manager.artists
+        .iter()
+        .map(|a| a.1.clone())
+        .collect();
+
+    artist_vec
+}
+
+
+#[tauri::command]
+fn get_albums(state: State<AppState>) -> Vec<Album> {
+    let state = state.lock().unwrap();
+
+    let album_vec = state.albums
+        .iter()
+        .map(|a| a.1.clone())
+        .collect();
+
+    album_vec
+}
+
+#[tauri::command]
 fn get_covers(state: State<AppState>) -> HashMap<Uuid, Image> {
     let state = state.lock().unwrap();
 
@@ -199,6 +232,27 @@ fn get_covers(state: State<AppState>) -> HashMap<Uuid, Image> {
     }
 
     covers
+}
+
+#[tauri::command] 
+fn get_cover(state: State<AppState>, id: &str) -> Option<Image> {
+    let state = state.lock().unwrap();
+
+    let uuid = match Uuid::parse_str(id) {
+        Ok(u) => u,
+        Err(e) => {
+            println!("invalid uuid: {e}");
+            return None;
+        },
+    };
+
+    if let Some(a) = state.albums.get(&uuid) {
+        if let Some(c) = &a.cover {
+            return Some(c.clone())
+        }
+    }
+
+    None
 }
 
 #[tauri::command]
@@ -246,7 +300,7 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![read_directory, get_songs, get_covers, play_song, toggle_play, delete_directory, get_directories, seek_to])
+        .invoke_handler(tauri::generate_handler![read_directory, get_songs, get_covers, get_artists, get_albums, get_cover, play_song, toggle_play, delete_directory, get_directories, seek_to])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
