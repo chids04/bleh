@@ -1,6 +1,6 @@
 # bleh
 
-a high perormance rust music player (not finished)
+a high performance rust music player (not finished)
 
 ## features
 - sepearate audio and ui threads for performant audio playback
